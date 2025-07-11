@@ -1,0 +1,35 @@
+{
+  "name": "lyo-request",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "node --max-old-space-size=8192 ./node_modules/.bin/next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.0.18",
+    "@types/redis": "^4.0.10",
+    "autoprefixer": "^10.4.16",
+    "firebase": "^11.10.0",
+    "googleapis": "^130.0.0",
+    "lucide-react": "^0.298.0",
+    "next": "14.0.4",
+    "postcss": "^8.4.32",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.48.2",
+    "redis": "^5.6.0",
+    "tailwindcss": "^3.3.6",
+    "twilio": "^5.7.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "14.0.4",
+    "typescript": "^5.3.3"
+  }
+}
