@@ -213,7 +213,7 @@ export default function HomePage() {
                   <h2 className="font-neue-montreal text-xl md:text-2xl lg:text-3xl font-light text-gray-500 mb-6 leading-tight">
                     Merhaba,
                   </h2>
-                  <h3 className="font-neue-montreal text-2xl md:text-4xl lg:text-5xl font-normal mb-8 leading-relaxed">
+                  <h3 className="font-neue-montreal text-2xl md:text-4xl lg:text-5xl font-normal mb-8 leading-[1.4] md:leading-[1.6]">
                     <span className="text-gray-900">LYO Öğrencinizin </span>
                     <span className="bg-gradient-to-r from-blue-400 to-blue-800 bg-clip-text text-transparent">İzinlerini</span>
                     <span className="text-gray-900"> buradan yönetebilirsiniz.</span>
@@ -231,12 +231,15 @@ export default function HomePage() {
                         </div>
                         <input
                           type="tel"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                           value={phoneNumber}
                           onChange={(e) => setPhoneNumber(e.target.value)}
                           placeholder="532 123 45 67"
-                          className="flex-1 px-6 py-4 border border-gray-300 rounded-r-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm placeholder-gray-400"
+                          className="flex-1 px-6 py-4 border border-gray-300 rounded-r-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-base md:text-lg font-normal placeholder-gray-400"
                           required
                           disabled={loading}
+                          autoComplete="tel"
                         />
                       </div>
                     </div>
@@ -261,6 +264,10 @@ export default function HomePage() {
                         'SMS Gönder'
                       )}
                     </button>
+                    
+                    <p className="text-xs text-gray-500 text-center mt-3">
+                      * Sadece sistemde kayıtlı öğrencilerin veli numaraları ile giriş yapılabilmektedir.
+                    </p>
                   </form>
                 </div>
 
@@ -407,21 +414,21 @@ export default function HomePage() {
         </div>
 
         {/* Support Section */}
-        <div className="border-t border-gray-200 py-16">
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-6">
-              <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="border-t border-gray-200 py-8 md:py-12">
+          <div className="text-center max-w-2xl mx-auto px-4">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-4">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h3 className="font-neue-montreal text-lg font-normal text-gray-900 mb-4">
+            <h3 className="font-neue-montreal text-base font-normal text-gray-900 mb-2">
               Desteğe ihtiyacınız var mı?
             </h3>
-            <p className="text-gray-600 text-sm mb-8 max-w-2xl mx-auto">
+            <p className="text-gray-600 text-xs mb-4">
               Herhangi bir sorun yaşıyorsanız veya yardıma ihtiyacınız varsa, destek ekibimizle iletişime geçebilirsiniz.
             </p>
-            <button className="inline-flex items-center px-8 py-3 border border-gray-300 rounded-2xl text-gray-700 hover:bg-gray-50 transition duration-200 text-sm">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button className="inline-flex items-center px-6 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition duration-200 text-xs">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
               İletişime Geç

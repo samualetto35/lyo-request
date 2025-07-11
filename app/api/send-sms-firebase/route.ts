@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { codeStorage, rateLimitMap, generateCode, checkRateLimit } from '../../lib/sms-storage'
+import { generateCode, checkRateLimit, storeCode } from '../../lib/sms-storage'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check rate limiting
-    const rateLimit = checkRateLimit(phoneNumber, 3, 60)
+    const rateLimit = await checkRateLimit(phoneNumber, 3, 60)
     
     if (!rateLimit.allowed) {
       console.log(`⏰ Rate limit exceeded for ${phoneNumber}`)
@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
     }
 
     // First check if phone number exists in Google Sheets
-    // Get the current host from the request
     const host = request.headers.get('host') || 'localhost:3000'
     const protocol = request.headers.get('x-forwarded-proto') || 'http'
     const baseUrl = `${protocol}://${host}`
@@ -66,15 +65,14 @@ export async function POST(request: NextRequest) {
     const code = generateCode()
     const expiry = Date.now() + (5 * 60 * 1000) // 5 minutes
 
-    // Store code
-    codeStorage.set(phoneNumber, {
+    // Store code in Redis
+    await storeCode(phoneNumber, {
       code,
       expiry,
       attempts: 0
     })
 
     console.log(`🔑 Generated SMS code for ${phoneNumber}: ${code} (expires: ${new Date(expiry).toISOString()})`)
-    console.log(`💾 Stored in codeStorage. Total entries: ${codeStorage.size}`)
 
     // Format phone number for international format
     let formattedPhone = phoneNumber.replace(/\D/g, '')

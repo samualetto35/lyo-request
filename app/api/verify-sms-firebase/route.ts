@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { codeStorage } from '../../lib/sms-storage'
+import { getCode, deleteCode, updateCodeAttempts } from '../../lib/sms-storage'
 import { createSession } from '../../lib/auth'
 
 // Helper function to normalize phone numbers (same as in phone-login)
@@ -23,7 +23,6 @@ export async function POST(request: NextRequest) {
     const { phoneNumber, code } = await request.json()
     
     console.log(`🔍 SMS Verification attempt for ${phoneNumber} with code: ${code}`)
-    console.log(`💾 CodeStorage has ${codeStorage.size} entries`)
     
     if (!phoneNumber || !code) {
       return NextResponse.json(
@@ -32,7 +31,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const storedData = codeStorage.get(phoneNumber)
+    const storedData = await getCode(phoneNumber)
     
     console.log(`📱 Stored data for ${phoneNumber}:`, storedData ? {
       storedCode: storedData.code,
@@ -43,9 +42,6 @@ export async function POST(request: NextRequest) {
     
     if (!storedData) {
       console.log(`❌ No verification code found for ${phoneNumber}`)
-      // Debug: List all stored phone numbers
-      const allKeys = Array.from(codeStorage.keys())
-      console.log(`🔍 All stored phone numbers: [${allKeys.join(', ')}]`)
       return NextResponse.json(
         { error: 'Doğrulama kodu bulunamadı' },
         { status: 400 }
@@ -54,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     if (Date.now() > storedData.expiry) {
       console.log(`⏰ Verification code expired for ${phoneNumber}`)
-      codeStorage.delete(phoneNumber)
+      await deleteCode(phoneNumber)
       return NextResponse.json(
         { error: 'Doğrulama kodu süresi dolmuş' },
         { status: 400 }
@@ -63,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     if (storedData.attempts >= 3) {
       console.log(`🚫 Too many attempts for ${phoneNumber}`)
-      codeStorage.delete(phoneNumber)
+      await deleteCode(phoneNumber)
       return NextResponse.json(
         { error: 'Çok fazla yanlış deneme yapıldı' },
         { status: 429 }
@@ -71,8 +67,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (storedData.code !== code) {
-      storedData.attempts++
-      console.log(`🔥 Invalid code for ${phoneNumber}. Expected: ${storedData.code}, Got: ${code}, Attempts: ${storedData.attempts}`)
+      await updateCodeAttempts(phoneNumber, storedData.attempts + 1)
+      console.log(`🔥 Invalid code for ${phoneNumber}. Expected: ${storedData.code}, Got: ${code}, Attempts: ${storedData.attempts + 1}`)
       return NextResponse.json(
         { error: 'Geçersiz doğrulama kodu' },
         { status: 400 }
@@ -81,10 +77,9 @@ export async function POST(request: NextRequest) {
 
     // Code is correct, clean up
     console.log('✅ Verification successful for', phoneNumber)
-    codeStorage.delete(phoneNumber)
+    await deleteCode(phoneNumber)
 
     // Get student data
-    // Get the current host from the request
     const host = request.headers.get('host') || 'localhost:3000'
     const protocol = request.headers.get('x-forwarded-proto') || 'http'
     const baseUrl = `${protocol}://${host}`
@@ -115,7 +110,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Normalize phone number for the redirect URL (same format as used in sheets)
+    // Normalize phone number for the redirect URL
     const normalizedPhone = normalizePhone(phoneNumber)
     console.log(`📱 Normalized phone for redirect: ${phoneNumber} → ${normalizedPhone}`)
 

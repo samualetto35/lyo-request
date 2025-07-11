@@ -1,9 +1,9 @@
 import './globals.css'
-import React from 'react'
+import { Metadata } from 'next'
 
-export const metadata = {
-  title: 'LYO Request - Öğrenci Yönetim Sistemi',
-  description: 'Öğrenci izin ve devam durumu takip sistemi',
+export const metadata: Metadata = {
+  title: 'LYO Request',
+  description: 'Sabancı Üniversitesi Lise Yaz Okulu İzin Yönetim Sistemi',
 }
 
 export default function RootLayout({
@@ -13,9 +13,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr">
-      <body className="font-sans">
-        {children}
-      </body>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+      </head>
+      <body>{children}</body>
     </html>
   )
 } 

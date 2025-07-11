@@ -5,37 +5,17 @@ let redisClient: ReturnType<typeof createClient> | null = null
 
 export async function getRedisClient() {
   if (!redisClient) {
-    console.log('Creating new Redis client...')
-    
-    const url = process.env.REDIS_URL
-    const token = process.env.REDIS_TOKEN
-
-    if (!url) {
-      console.error('REDIS_URL is not set')
-      throw new Error('REDIS_URL is required')
-    }
-
     redisClient = createClient({
-      url: url,
-      password: token, // Using REDIS_TOKEN instead of REDIS_PASSWORD
+      url: process.env.REDIS_URL || 'redis://localhost:6379',
+      // For production, add authentication
+      password: process.env.REDIS_PASSWORD,
     })
 
     redisClient.on('error', (err) => {
       console.error('Redis Client Error:', err)
-      redisClient = null // Reset client on error
     })
 
-    redisClient.on('connect', () => {
-      console.log('Redis client connected successfully')
-    })
-
-    try {
-      await redisClient.connect()
-    } catch (error) {
-      console.error('Failed to connect to Redis:', error)
-      redisClient = null
-      throw error
-    }
+    await redisClient.connect()
   }
 
   return redisClient
