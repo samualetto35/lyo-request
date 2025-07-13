@@ -11,12 +11,16 @@ export async function GET(request: NextRequest) {
     
     if (!validation.valid) {
       return NextResponse.json(
-        { error: 'Oturum geçersiz veya süresi dolmuş' },
+        { 
+          authenticated: false,
+          error: 'Oturum geçersiz veya süresi dolmuş' 
+        },
         { status: 401 }
       )
     }
     
     return NextResponse.json({
+      authenticated: true,
       success: true,
       phone: validation.phone,
       message: 'Oturum geçerli'
@@ -25,7 +29,10 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('🚨 Auth check error:', error)
     return NextResponse.json(
-      { error: 'Yetkilendirme kontrol edilemedi' },
+      { 
+        authenticated: false,
+        error: 'Yetkilendirme kontrol edilemedi' 
+      },
       { status: 500 }
     )
   }
