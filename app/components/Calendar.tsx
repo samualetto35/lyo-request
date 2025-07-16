@@ -6,6 +6,10 @@ interface CalendarProps {
   minDate?: Date
   maxDate?: Date
   className?: string
+  highlightedDays?: { date: Date, label: string, isSelectedStudent?: boolean }[]
+  rangeStart?: Date | null
+  rangeEnd?: Date | null
+  disabledDays?: Date[]
 }
 
 const Calendar: React.FC<CalendarProps> = ({ 
@@ -13,7 +17,11 @@ const Calendar: React.FC<CalendarProps> = ({
   onDateSelect, 
   minDate,
   maxDate,
-  className = '' 
+  className = '',
+  highlightedDays = [],
+  rangeStart = null,
+  rangeEnd = null,
+  disabledDays = [],
 }) => {
   const [currentMonth, setCurrentMonth] = useState(selectedDate || new Date())
 
@@ -36,6 +44,7 @@ const Calendar: React.FC<CalendarProps> = ({
   const isDateDisabled = (date: Date) => {
     if (minDate && date < minDate) return true
     if (maxDate && date > maxDate) return true
+    if (disabledDays.some(d => d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth() && d.getDate() === date.getDate())) return true
     return false
   }
 
@@ -82,34 +91,74 @@ const Calendar: React.FC<CalendarProps> = ({
       const disabled = isDateDisabled(date)
       const selected = isDateSelected(date)
       const today = isToday(date)
-
+      // Collect all highlights for this day
+      const highlights = highlightedDays.filter(hd => hd.date.getFullYear() === date.getFullYear() && hd.date.getMonth() === date.getMonth() && hd.date.getDate() === date.getDate())
+      // Tooltip state
+      const [showTooltip, setShowTooltip] = useState(false)
+      // Range highlight
+      let inRange = false;
+      if (rangeStart && rangeEnd) {
+        const d = date.setHours(0,0,0,0);
+        const s = rangeStart.setHours(0,0,0,0);
+        const e = rangeEnd.setHours(0,0,0,0);
+        inRange = d >= Math.min(s, e) && d <= Math.max(s, e);
+      }
       days.push(
-        <button
-          key={day}
-          type="button"
-          onClick={() => handleDateClick(day)}
-          disabled={disabled}
-          className={`
-            h-12 w-12 rounded-lg text-sm font-medium transition-all duration-200 relative
-            ${disabled 
-              ? 'text-gray-300 cursor-not-allowed bg-gray-50' 
-              : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:scale-105 cursor-pointer'
-            }
-            ${selected 
-              ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg scale-105' 
-              : ''
-            }
-            ${today && !selected 
-              ? 'bg-blue-100 text-blue-600 font-bold ring-2 ring-blue-200' 
-              : ''
-            }
-          `}
+        <div className="relative flex flex-col items-center" key={day}
+          onMouseEnter={() => setShowTooltip(true)}
+          onMouseLeave={() => setShowTooltip(false)}
+          onFocus={() => setShowTooltip(true)}
+          onBlur={() => setShowTooltip(false)}
         >
-          {day}
-          {selected && (
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-          )}
-        </button>
+          <button
+            type="button"
+            onClick={() => handleDateClick(day)}
+            disabled={disabled}
+            className={`
+              h-12 w-9 md:h-24 md:w-24 rounded-lg text-xs md:text-lg font-medium transition-all duration-200 relative flex flex-col items-center
+              ${disabled 
+                ? (disabledDays.some(d => d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth() && d.getDate() === date.getDate())
+                    ? 'border-2 border-blue-400 bg-gray-200 text-blue-400 cursor-not-allowed'
+                    : 'text-gray-300 cursor-not-allowed bg-gray-50')
+                : highlights.length > 0
+                  ? 'bg-green-100 text-green-900 hover:bg-green-200 hover:text-green-900'
+                  : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:scale-105 cursor-pointer'
+              }
+              ${selected 
+                ? 'ring-2 ring-blue-400 bg-blue-600 text-white hover:bg-blue-700 shadow-lg scale-105' 
+                : ''
+              }
+              ${today && !selected 
+                ? 'bg-blue-100 text-blue-600 font-bold ring-2 ring-blue-200 border-2 border-blue-400' 
+                : ''
+              }
+              ${inRange && !selected && !(today && !selected) ? 'bg-blue-200/60' : ''}
+            `}
+          >
+            <span className="mt-1">{day}</span>
+            {selected && (
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+            )}
+            {/* Show badge if there are highlights */}
+            {highlights.length > 0 && highlights.some(h => h.isSelectedStudent) && (
+              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-green-500 rounded-full z-10"></span>
+            )}
+            {/* Eğer seçili öğrenci yoksa veya o gün başka izinler de varsa, badge göster */}
+            {highlights.length > 0 && !highlights.some(h => h.isSelectedStudent) && (
+              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs font-bold rounded-full px-1.5 py-0.5 z-10">
+                {highlights.length}
+              </span>
+            )}
+            {/* Tooltip for highlights */}
+            {showTooltip && highlights.length > 0 && (
+              <div className="absolute left-1/2 -translate-x-1/2 top-12 md:top-16 z-20 bg-white border border-gray-200 rounded-lg shadow-lg px-2 md:px-4 py-1 md:py-2 text-xs md:text-sm text-gray-900 whitespace-nowrap">
+                {highlights.map((h, idx) => (
+                  <div key={idx}>{h.label}</div>
+                ))}
+              </div>
+            )}
+          </button>
+        </div>
       )
     }
 
@@ -165,6 +214,10 @@ const Calendar: React.FC<CalendarProps> = ({
       {/* Legend */}
       <div className="mt-4 pt-4 border-t border-gray-200">
         <div className="flex items-center justify-center space-x-6 text-xs text-gray-500">
+          <div className="flex items-center">
+            <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+            <span>İzinli Gün</span>
+          </div>
           <div className="flex items-center">
             <div className="w-3 h-3 bg-blue-100 rounded-full mr-2 ring-2 ring-blue-200"></div>
             <span>Bugün</span>

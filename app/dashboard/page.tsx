@@ -28,48 +28,9 @@ export default function Dashboard() {
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date())
   const [notification, setNotification] = useState<string>('')
   const [showNotification, setShowNotification] = useState(false)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [authChecking, setAuthChecking] = useState(true)
   const router = useRouter()
 
-  // Authentication check
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/check-auth', {
-          method: 'GET',
-          credentials: 'include',
-        })
-        
-        if (!response.ok) {
-          // Not authenticated, redirect to home
-          router.push('/')
-          return
-        }
-        
-        const data = await response.json()
-        if (!data.authenticated) {
-          // Not authenticated, redirect to home
-          router.push('/')
-          return
-        }
-        
-        setIsAuthenticated(true)
-      } catch (error) {
-        console.error('Auth check failed:', error)
-        router.push('/')
-        return
-      } finally {
-        setAuthChecking(false)
-      }
-    }
-    
-    checkAuth()
-  }, [router])
-
-  useEffect(() => {
-    if (!isAuthenticated || authChecking) return
-    
     fetchStudents()
     
     // Set up automatic refresh every 15 seconds for more real-time updates
@@ -78,7 +39,7 @@ export default function Dashboard() {
     }, 15000)
 
     return () => clearInterval(interval)
-  }, [isAuthenticated, authChecking])
+  }, [])
 
   useEffect(() => {
     filterStudents()
@@ -202,14 +163,12 @@ export default function Dashboard() {
     }
   }
 
-  if (loading || authChecking) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">
-            {authChecking ? 'Kimlik doğrulanıyor...' : 'Veriler yükleniyor...'}
-          </p>
+          <p className="text-gray-600">Veriler yükleniyor...</p>
         </div>
       </div>
     )
