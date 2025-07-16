@@ -146,7 +146,10 @@ export default function HomePage() {
     }
 
     if (adminPassword.toLowerCase() === 'sus') {
-      // Redirect to dashboard
+      // Admin flag bırak
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('lyo-admin', 'true');
+      }
       router.push('/dashboard')
     } else {
       setError('Geçersiz şifre')

@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
         minute: '2-digit'
       })
       
-      const approvedText = `ONAYLANDI (${approvalData.startDate} - ${approvalData.endDate}) [SMS: ${timestamp}]`
+      const approvedText = `${approvalData.startDate} - ${approvalData.endDate} ✅ [ONAYLANDI] / [SMS: ${timestamp}]`
       
       await sheets.spreadsheets.values.update({
         spreadsheetId,
